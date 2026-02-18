@@ -1,0 +1,47 @@
+Final Technical UI/UX Specification: Aktivitus Health Dashboard & PDFCore Objective: Transform the static health report into a dynamic, data-driven dashboard and PDF. The design must be professional, clean, and focus on "Scannability" using the existing Teal (#8FB3A3) and Sage (#C8D6C7) color palette.1. Header & Client IdentityDynamic Metadata: In the top-left corner, add the Client’s Full Name and the Examination Date.Visual Style: Use clean, professional typography without any background boxes or containers. This must be a permanent fixture in the PDF export.Header Icon: Replace the 3D torso with the previously selected minimalist vector silhouette (modern line-art style).2. Comparative Metrics (Delta Logic)Application: Add a "Difference from previous visit" (Skillnad från förra gången) indicator for every metric in the "Fysisk Status & Kapacitet" and "Blodanalys" sections.Design: Follow the existing style from the lifestyle metrics: a small colored arrow (▲/▼) followed by the numerical change.Color Logic: Teal for improvement, Amber for regressive trends.3. Interactive Ekblom-Bak Test GraphVisual Upgrade: Integrate a 2D normative graph directly within the Ekblom-Bak section.Graph Features:X-Axis: Age.Y-Axis: $VO_{2}$ Max ($ml/min/kg$).Automation: The system must automatically plot the client’s result as a highlighted point on the curve based on the linked Excel data.Dashboard Interaction: In the web view, allow the user to click the graph to manually input an age to see how results compare across different age brackets.Layout: Shift the "Blodtryck" section upwards to ensure the graph fits comfortably.4. Dashboard Exclusive: Historical SidebarLocation: Utilize the empty blue-shaded area on the far right of the web interface.Content: A comprehensive table showing a side-by-side comparison of Previous Values vs. Latest Values for all metrics.Export Rule: This section is Dashboard Only; it must be completely excluded from the PDF export.5. Footer Overhaul: "Dina Fokusområden" (Focus Areas)Removal: Delete the "89% Total Hälsopoäng" box entirely.Logic & Selection (Dashboard):Checkbox Interface: Within the "Livsstilsmetriker" section, add a checkbox next to each metric.Constraint: The user (coach/client) can select a minimum of 0 and a maximum of 3 metrics.Dynamic Preview: The footer should update in real-time as checkboxes are toggled.PDF Design:Conditional Visibility: Render only the 0–3 selected cards. If none are selected, the section is removed to save space.Card Design: Create separate, elegant cards with rounded corners.Iconography: Each card must feature a high-quality, professional icon matching the specific metric (e.g., "Dumbbell" for Training, "Apple" for Nutrition, "Clock" for Sleep).6. Global Technical Design RulesShapes: All containers must maintain the established rounded corner radius.Fonts: Use Serif for section headers and Sans-serif for data points and labels.Spacing: Ensure generous white space to prevent the report from feeling cluttered despite the added data.
+
+
+---
+
+Technical UI/UX Specification: Aktivitus Interactive Dashboard & Multi-Page PDFCore Objective: Transform the static health report into an interactive, multi-layered digital dashboard and a professional multi-page PDF. The design must be clean, using the Aktivitus Teal (#8FB3A3) and Sage (#C8D6C7) palette, with high "scannability."1. Global Navigation & Header (Dashboard View)Top Navigation Bar:Client Info: Display [Client Name] and [Date] in the top-left (e.g., "John Doe • 2026-02-11").Action Buttons (Top-Right): 1.  "Ladda upp ny fil" (Upload new file).2.  "Exportera PDF" (Export PDF).3.  NEW: "Visa Information" (View Info): A button placed between Export and Logout. This links to a dedicated "Educational Insight" page.4.  "Logga ut" (Logout).Report Header: Use the minimalist vector silhouette icon (person in motion) instead of the 3D torso.2. Primary Dashboard Layout & Data LogicComparative Metrics (Delta Values): * Add "Difference from previous visit" (Skillnad från förra gången) for every parameter in the "Fysisk Status & Kapacitet" and "Blodanalys" sections.Use small trend arrows (▲/▼) and numerical values (e.g., ▲ +0.4), matching the existing lifestyle metric style.Interactive Ekblom-Bak Graph:Automation: Automatically plot the client’s $VO_{2}$ Max ($ml/min/kg$) on a normative age-based curve using data from the linked Excel file.Interaction: Clicking the graph allows the user to manually change the "Age" variable to see how their current fitness level compares to other age groups.Dashboard Sidebar (Right Panel):Visibility: Exclusive to the web dashboard; hidden in the PDF report.Feature: A historical table comparing all "Previous" values vs. "Latest" values for a deep-dive trend analysis.3. Dynamic Footer: "Dina Fokusområden" (Focus Areas)Removal: Replace the "89% Total Hälsopoäng" box.Logic (Dashboard): * Implement checkboxes next to all 8 lifestyle metrics.Constraint: User selects 0 to 3 metrics to highlight.PDF Rendering:Display up to 3 elegant cards with rounded corners.Each card must feature a high-quality, matching icon (e.g., an apple for Nutrition, a dumbbell for Training).If zero are selected, the section is omitted to save space.4. New Feature: Educational Insight Page ("Visa Information")Purpose: A secondary page providing deep-dive descriptions for every measured parameter.Content: For each metric (e.g., Glucose, VO2 Max), provide:The "Why": Why we measure it.Health Impact: What the results mean for the client’s long-term health.Export Capability: This page must also be exportable as a professional PDF, maintaining the same Aktivitus branding and layout style as the primary report.5. Technical Design RulesShapes: All boxes must have consistent rounded corners.Typography: Serif for section headers; Sans-serif for data points.PDF Logic: Page 1 = Primary Health Summary; Page 2 (Optional) = Educational Insights.
+
+
+---
+
+
+Technical Specification: Sophisticated Dynamic Sliders & Trend LogicObjective: Enhance the "Livsstilsmetriker" section with subtle status-based color transitions and visual trend indicators, ensuring the aesthetic remains professional, calm, and aligned with the existing Aktivitus brand.1. Soft Gradient Status SystemUpdate the slider bars to transition smoothly between colors based on the value, using desaturated, "muted" tones to avoid a "loud" or neon look:Scores 0–3 (Alert): A soft, muted terracotta or dusty orange.Scores 4–6 (Transition): A gentle gradient blending from the dusty orange into the existing sage green.Scores 7–10 (Optimal): The existing sage green to teal gradient, representing balance and health.2. The "Subtle Drop" Indicator (Historical Regression)To show if a value has decreased since the last visit without breaking the clean design:Logic: If $Value_{previous} > Value_{current}$, the portion of the bar representing the "lost" progress (the gap between the old and new value) should change color.Visual Style: Instead of a bright orange, use a transparent, desaturated orange overlay or a subtle hatched pattern in that specific segment of the bar.Effect: This should look like a "ghost" of the previous achievement, clearly highlighting the decline while maintaining the report's elegant aesthetic.3. UI & Contrast RequirementsThe Slider Knob: Ensure the white circular slider knob has a very subtle drop shadow to remain distinct against the multi-colored background.Delta Values: Maintain the small ▲/▼ indicators and numerical values (e.g., ▲ +1) next to the labels for quick scannability.
+
+
+---
+
+Technical Specification: Blood Analysis Data Visualization (Static)
+Objective: Standardize the "Blodanalys" section by implementing static, data-driven visualization bars that reflect the client's results from the Excel source. The design must remain professional and muted to match the existing report aesthetic.
+
+1. Static Visualization Bars
+Application: Replace text-only results for Hemoglobin, Glukos, LDL/HDL, and Triglycerider with horizontal visualization bars.
+
+Logic: These bars are not interactive sliders. They are static indicators where the "marker" position is locked based on the specific value imported from the Excel file.
+
+Visual Style: Maintain the soft, rounded bar design from the lifestyle section for a unified look.
+
+2. Sophisticated Color-Status Mapping
+The bars should use a muted gradient to indicate health status without being visually overwhelming:
+
+Out of Range (0–3 range equivalent): A soft, desaturated terracotta/dusty orange.
+
+Borderline (4–6 range equivalent): A gentle transition from dusty orange to sage green.
+
+Optimal (7–10 range equivalent): The signature Aktivitus sage-to-teal gradient.
+
+3. Historical Regression Logic ("The Orange Drop")
+Decline Indicator: If the latest value from the Excel file shows a regression compared to the previous test, the segment of the bar representing the "lost" progress must be highlighted in a muted, transparent orange.
+
+Data Point: The current value marker should be a clean white circle positioned at the end of the colored bar segment.
+
+4. Text & Labels
+Status Tags: Keep labels like "OPTIMALT", "BRA", or "MELLAN" next to the bar for immediate clarity.
+
+Numerical Data: Display the exact measurement (e.g., "95 mmol/L") and the numerical trend (e.g., ▼ -5) clearly beside each bar.
+
+
+---

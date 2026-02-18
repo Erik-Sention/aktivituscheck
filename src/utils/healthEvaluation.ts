@@ -40,7 +40,7 @@ function getVO2Thresholds(gender?: 'male' | 'female', age?: number) {
 }
 
 export function getBloodRefRange(
-  metric: 'hb' | 'glucose' | 'ldl' | 'hdl' | 'triglycerides',
+  metric: 'hb' | 'glucose' | 'ldl' | 'hdl' | 'triglycerides' | 'tcHdlRatio' | 'ldlHdlRatio',
   gender?: 'male' | 'female',
   age?: number
 ): BloodRefRange {
@@ -78,7 +78,26 @@ export function getBloodRefRange(
     case 'triglycerides':
       // Lower is better — Green 0–2.3, Yellow 2.4–2.69, Red ≥ 2.7
       return { low: 0.3, high: 2.3, greenLow: 0, greenHigh: 2.3, yellowLow: 0, yellowHigh: 2.69 };
+
+    case 'tcHdlRatio':
+      // Lower is better — Optimal < 3.5, Warning 3.5–5.0, High-risk > 5.0
+      return { low: 1.5, high: 3.5, greenLow: 0, greenHigh: 3.5, yellowLow: 0, yellowHigh: 5.0 };
+
+    case 'ldlHdlRatio':
+      // Lower is better — Optimal < 3.0, Warning 3.0–4.0, High-risk > 4.0
+      return { low: 0.5, high: 3.0, greenLow: 0, greenHigh: 3.0, yellowLow: 0, yellowHigh: 4.0 };
   }
+}
+
+// Compute TC/HDL ratio from blood values (Friedewald: TC = LDL + HDL + TG/2.2)
+export function computeTcHdlRatio(bloodWork: { hdl: number; ldl: number; triglycerides: number }): number {
+  const tc = bloodWork.ldl + bloodWork.hdl + bloodWork.triglycerides / 2.2;
+  return Math.round((tc / bloodWork.hdl) * 10) / 10;
+}
+
+// Compute LDL/HDL ratio
+export function computeLdlHdlRatio(bloodWork: { hdl: number; ldl: number }): number {
+  return Math.round((bloodWork.ldl / bloodWork.hdl) * 10) / 10;
 }
 
 function evaluateBloodMetric(value: number, ref: BloodRefRange): RiskLevel {
@@ -200,6 +219,14 @@ function evaluateIndividualMetrics(data: HealthData): IndividualMetricRisks {
   const ldl = evaluateBloodMetric(data.bloodWork.ldl, getBloodRefRange('ldl', gender, age));
   const triglycerides = evaluateBloodMetric(data.bloodWork.triglycerides, getBloodRefRange('triglycerides', gender, age));
 
+  // TC/HDL Ratio — computed from blood values
+  const tcHdlValue = computeTcHdlRatio(data.bloodWork);
+  const tcHdlRatio = evaluateBloodMetric(tcHdlValue, getBloodRefRange('tcHdlRatio', gender, age));
+
+  // LDL/HDL Ratio
+  const ldlHdlValue = computeLdlHdlRatio(data.bloodWork);
+  const ldlHdlRatio = evaluateBloodMetric(ldlHdlValue, getBloodRefRange('ldlHdlRatio', gender, age));
+
   // Body Fat — gender-aware (InBody reference)
   let bodyFat: RiskLevel = 'optimal';
   const bf = data.bodyComposition.bodyFat;
@@ -212,6 +239,12 @@ function evaluateIndividualMetrics(data: HealthData): IndividualMetricRisks {
     if (bf < 10 || bf > 25) bodyFat = 'high-risk';
     else if (bf > 20) bodyFat = 'warning';
   }
+
+  // Visceral Fat — InBody scale 1-20: Optimal 1–9, Warning 10–14, High-risk ≥15
+  let visceralFat: RiskLevel = 'optimal';
+  const vf = data.bodyComposition.visceralFat;
+  if (vf >= 15) visceralFat = 'high-risk';
+  else if (vf >= 10) visceralFat = 'warning';
 
   // Blood Pressure
   let bloodPressure: RiskLevel = 'optimal';
@@ -226,7 +259,7 @@ function evaluateIndividualMetrics(data: HealthData): IndividualMetricRisks {
   else if (data.fitness.vo2Max < vt.medium) vo2Max = 'warning';
   else if (data.fitness.vo2Max < vt.high) vo2Max = 'good';
 
-  return { hb, glucose, hdl, ldl, triglycerides, bodyFat, bloodPressure, vo2Max };
+  return { hb, glucose, hdl, ldl, triglycerides, tcHdlRatio, ldlHdlRatio, bodyFat, visceralFat, bloodPressure, vo2Max };
 }
 
 export function evaluateHealthData(data: HealthData): EvaluatedHealthData {

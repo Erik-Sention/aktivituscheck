@@ -27,6 +27,7 @@ export interface FitnessTests {
 export interface BodyComposition {
   bodyFat: number; // percentage
   muscleMass: number; // percentage
+  visceralFat: number; // InBody scale 1-20
   weight: number; // kg
   height: number; // cm
 }
@@ -55,7 +56,10 @@ export interface IndividualMetricRisks {
   hdl: RiskLevel;
   ldl: RiskLevel;
   triglycerides: RiskLevel;
+  tcHdlRatio: RiskLevel;
+  ldlHdlRatio: RiskLevel;
   bodyFat: RiskLevel;
+  visceralFat: RiskLevel;
   bloodPressure: RiskLevel;
   vo2Max: RiskLevel;
 }

@@ -139,7 +139,7 @@ export function buildLifestyleZones(): ReferenceZone[] {
 }
 
 export function buildBloodRefZones(
-  metric: 'hb' | 'glucose' | 'ldl' | 'hdl' | 'triglycerides',
+  metric: 'hb' | 'glucose' | 'ldl' | 'hdl' | 'triglycerides' | 'tcHdlRatio' | 'ldlHdlRatio',
   gender?: 'male' | 'female',
   age?: number,
 ): ReferenceZone[] {
@@ -188,6 +188,15 @@ export function buildBodyFatZones(gender?: 'male' | 'female'): ReferenceZone[] {
     { low: 10, high: 20, color: '#8FB3A3', opacity: 0.22 },
     { low: 20, high: 25, color: '#C4A47C', opacity: 0.18 },
     { low: 25, high: 35, color: '#C87979', opacity: 0.15 },
+  ];
+}
+
+export function buildVisceralFatZones(): ReferenceZone[] {
+  // InBody scale 1-20: Optimal 1–9, Warning 10–14, High-risk ≥15
+  return [
+    { low: 0, high: 9, color: '#8FB3A3', opacity: 0.22 },
+    { low: 9, high: 14, color: '#C4A47C', opacity: 0.18 },
+    { low: 14, high: 20, color: '#C87979', opacity: 0.15 },
   ];
 }
 

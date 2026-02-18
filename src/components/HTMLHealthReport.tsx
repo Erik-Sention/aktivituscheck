@@ -4,9 +4,8 @@ import React, { forwardRef } from 'react';
 import { EvaluatedHealthData, FocusArea, EkblomBakNormativeData } from '@/types/health';
 import { getLifestyleItems } from '@/utils/lifestyleItems';
 import { computeDelta, getDeltaColor, formatDelta, getRiskLabel } from '@/utils/deltaHelpers';
-import { getRiskColor, getBloodRefRange } from '@/utils/healthEvaluation';
+import { getRiskColor, getBloodRefRange, computeTcHdlRatio, computeLdlHdlRatio } from '@/utils/healthEvaluation';
 import { EkblomBakGraph } from './EkblomBakGraph';
-import { FocusAreaCards } from './FocusAreaCards';
 import { getEkblomBakData } from '@/data/ekblomBakDefaults';
 
 // Dynamic gradient: terracotta (low) → amber → sage → teal (high)
@@ -119,9 +118,12 @@ export const HTMLHealthReport = forwardRef<HTMLDivElement, HTMLHealthReportProps
     // Fysisk Status deltas
     const weightDelta = computeDelta(data.bodyComposition.weight, previousData?.bodyComposition.weight);
     const bodyFatDelta = computeDelta(data.bodyComposition.bodyFat, previousData?.bodyComposition.bodyFat);
+    const muscleMassDelta = computeDelta(data.bodyComposition.muscleMass, previousData?.bodyComposition.muscleMass);
+    const visceralFatDelta = computeDelta(data.bodyComposition.visceralFat, previousData?.bodyComposition.visceralFat);
     const systolicDelta = computeDelta(data.bloodPressure.systolic, previousData?.bloodPressure.systolic);
     const diastolicDelta = computeDelta(data.bloodPressure.diastolic, previousData?.bloodPressure.diastolic);
     const vo2Delta = computeDelta(data.fitness.vo2Max, previousData?.fitness.vo2Max);
+    const gripDelta = computeDelta(data.fitness.gripStrength, previousData?.fitness.gripStrength);
 
     // Blodanalys deltas
     const hbDelta = computeDelta(data.bloodWork.hb, previousData?.bloodWork.hb);
@@ -130,13 +132,23 @@ export const HTMLHealthReport = forwardRef<HTMLDivElement, HTMLHealthReportProps
     const hdlDelta = computeDelta(data.bloodWork.hdl, previousData?.bloodWork.hdl);
     const trigDelta = computeDelta(data.bloodWork.triglycerides, previousData?.bloodWork.triglycerides);
 
+    // TC/HDL ratio (computed)
+    const tcHdlRatio = computeTcHdlRatio(data.bloodWork);
+    const prevTcHdlRatio = previousData ? computeTcHdlRatio(previousData.bloodWork) : null;
+    const tcHdlDelta = computeDelta(tcHdlRatio, prevTcHdlRatio);
+
+    // LDL/HDL ratio (computed)
+    const ldlHdlRatio = computeLdlHdlRatio(data.bloodWork);
+    const prevLdlHdlRatio = previousData ? computeLdlHdlRatio(previousData.bloodWork) : null;
+    const ldlHdlDelta = computeDelta(ldlHdlRatio, prevLdlHdlRatio);
+
     const normData = ekblomBakData || getEkblomBakData(data.gender);
 
     return (
-      <div ref={ref} className="px-8 pt-10 pb-4 bg-[#F8F6F2] flex flex-col" style={{ width: '794px', maxHeight: '1122px' }}>
+      <div ref={ref} className="px-8 pt-8 pb-3 bg-[#F8F6F2] flex flex-col" style={{ width: '794px', maxHeight: '1122px' }}>
         <div className="flex-1 flex flex-col">
           {/* Header */}
-          <header className="flex justify-between items-start mb-6">
+          <header className="flex justify-between items-start mb-4">
             <div>
               <p className="serif text-xl italic text-[#4A4642]">{data.name || 'Klient'}</p>
               {data.personnummer && (
@@ -154,12 +166,12 @@ export const HTMLHealthReport = forwardRef<HTMLDivElement, HTMLHealthReportProps
           </header>
 
           {/* Main Grid */}
-          <div className="grid grid-cols-2 gap-6">
+          <div className="grid grid-cols-2 gap-5">
 
             {/* Lifestyle Metrics Card */}
-            <div className="bento-card p-7">
-              <h2 className="serif text-xl mb-6 italic">Livsstil</h2>
-              <div className="space-y-4">
+            <div className="bento-card p-6">
+              <h2 className="serif text-xl mb-4 italic">Livsstil</h2>
+              <div className="space-y-3">
                 {items.map((item, idx) => {
                   const diff = prevItems ? item.value - prevItems[idx].value : null;
                   return (
@@ -257,18 +269,38 @@ export const HTMLHealthReport = forwardRef<HTMLDivElement, HTMLHealthReportProps
                     : STRENGTH_INSIGHTS[topStrengths[0]?.key]
                   }
                 </p>
+
+                {/* Fokusområden — inline i samma kort */}
+                {selectedFocusAreas && selectedFocusAreas.length > 0 && (
+                  <div className="mt-3 pt-3 border-t border-[#F5F2EE]">
+                    <p className="text-[9px] uppercase tracking-widest font-semibold text-[#9A9488] mb-2">
+                      Fokusområden
+                    </p>
+                    <div className="space-y-1.5">
+                      {selectedFocusAreas.map((area) => (
+                        <div key={area.key} className="flex items-start gap-1.5">
+                          <span className="text-[9px] font-bold" style={{ color: '#8FB3A3' }}>◆</span>
+                          <div>
+                            <span className="text-[10px] font-semibold text-[#4A4642]">{area.label}</span>
+                            <span className="text-[8px] text-[#9A9488] ml-1">{area.description}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
             {/* Right Column */}
-            <div className="space-y-6">
+            <div className="space-y-4">
 
               {/* Fysisk Status */}
-              <div className="bento-card p-7">
+              <div className="bento-card p-6">
                 <h2 className="serif text-xl italic mb-3">Fysisk Status</h2>
 
-                {/* Vikt + Kroppsfett + Blodtryck */}
-                <div className="grid grid-cols-3 gap-3 pb-3 border-b border-[#F5F2EE]">
+                {/* Row 1: Vikt + Kroppsfett + Blodtryck */}
+                <div className="grid grid-cols-3 gap-3 pb-2.5 border-b border-[#F5F2EE]">
                   <div>
                     <p className="text-[8px] uppercase text-[#7a8a9a] mb-0.5">Vikt</p>
                     <span className="text-2xl font-extralight tracking-tighter">{data.bodyComposition.weight}</span>
@@ -311,44 +343,85 @@ export const HTMLHealthReport = forwardRef<HTMLDivElement, HTMLHealthReportProps
                   </div>
                 </div>
 
-                {/* Ekblom-Bak Test with Graph */}
-                <div className="pt-3">
-                  <h2 className="serif text-xl italic mb-1">Kondition <span className="text-[8px] uppercase text-[#7a8a9a] not-italic tracking-wide">(Ekblom-Bak Test)</span></h2>
-                  <div className="flex items-baseline gap-2 mb-2">
-                    <p className="text-xl font-light tracking-tight" style={{ color: getRiskColor(data.metricRisks.vo2Max) }}>
-                      {data.fitness.vo2Max}
-                      <span className="text-[8px] uppercase ml-1 text-[#7a8a9a]">ml/min/kg</span>
-                    </p>
-                    {vo2Delta !== null && vo2Delta !== 0 && (
-                      <span className="text-[8px] font-bold" style={{ color: getDeltaColor('vo2Max', vo2Delta) }}>
-                        {formatDelta('vo2Max', vo2Delta, 1)}
+                {/* Row 2: Muskelmassa + Visceralt fett */}
+                <div className="grid grid-cols-3 gap-3 pt-2.5">
+                  <div>
+                    <p className="text-[8px] uppercase text-[#7a8a9a] mb-0.5">Muskelmassa</p>
+                    <span className="text-2xl font-extralight tracking-tighter">{data.bodyComposition.muscleMass}</span>
+                    <span className="text-[10px] ml-1 opacity-40 uppercase">%</span>
+                    {muscleMassDelta !== null && muscleMassDelta !== 0 && (
+                      <span className="block text-[8px] font-bold" style={{ color: getDeltaColor('muscleMass', muscleMassDelta) }}>
+                        {formatDelta('muscleMass', muscleMassDelta, 1)}
                       </span>
                     )}
                   </div>
-                  <span className="block text-[9px] uppercase font-bold tracking-tighter mb-2" style={{ color: getRiskColor(data.metricRisks.vo2Max) }}>
-                    ● {getEkblomBakZoneLabel(data.fitness.vo2Max, data.age, normData) || getRiskLabel(data.metricRisks.vo2Max)}
-                  </span>
-                  <EkblomBakGraph
-                    vo2Max={data.fitness.vo2Max}
-                    age={data.age}
-                    normativeData={normData}
-                    width={310}
-                    height={120}
-                    interactive={false}
-                  />
+                  <div>
+                    <p className="text-[8px] uppercase text-[#7a8a9a] mb-0.5">Visceralt fett</p>
+                    <span className="text-2xl font-extralight tracking-tighter" style={{ color: getRiskColor(data.metricRisks.visceralFat) }}>
+                      {data.bodyComposition.visceralFat}
+                    </span>
+                    <span className="text-[10px] ml-1 opacity-40 uppercase">/20</span>
+                    {visceralFatDelta !== null && visceralFatDelta !== 0 && (
+                      <span className="block text-[8px] font-bold" style={{ color: getDeltaColor('visceralFat', visceralFatDelta) }}>
+                        {formatDelta('visceralFat', visceralFatDelta, 0)}
+                      </span>
+                    )}
+                    <span className="block text-[9px] uppercase font-bold tracking-tighter" style={{ color: getRiskColor(data.metricRisks.visceralFat) }}>
+                      ● {getRiskLabel(data.metricRisks.visceralFat)}
+                    </span>
+                  </div>
+                  <div>
+                    <p className="text-[8px] uppercase text-[#7a8a9a] mb-0.5">Greppstyrka</p>
+                    <span className="text-2xl font-extralight tracking-tighter">{data.fitness.gripStrength}</span>
+                    <span className="text-[10px] ml-1 opacity-40 uppercase">kg</span>
+                    {gripDelta !== null && gripDelta !== 0 && (
+                      <span className="block text-[8px] font-bold" style={{ color: getDeltaColor('gripStrength', gripDelta) }}>
+                        {formatDelta('gripStrength', gripDelta, 0)}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
 
+              {/* Kondition (VO2max / Ekblom-Bak) — egen ruta */}
+              <div className="bento-card p-5">
+                <h2 className="serif text-lg italic mb-1">Kondition <span className="text-[8px] uppercase text-[#7a8a9a] not-italic tracking-wide">(Ekblom-Bak Test)</span></h2>
+                <div className="flex items-baseline gap-2 mb-1">
+                  <p className="text-lg font-light tracking-tight" style={{ color: getRiskColor(data.metricRisks.vo2Max) }}>
+                    {data.fitness.vo2Max}
+                    <span className="text-[8px] uppercase ml-1 text-[#7a8a9a]">ml/min/kg</span>
+                  </p>
+                  {vo2Delta !== null && vo2Delta !== 0 && (
+                    <span className="text-[8px] font-bold" style={{ color: getDeltaColor('vo2Max', vo2Delta) }}>
+                      {formatDelta('vo2Max', vo2Delta, 1)}
+                    </span>
+                  )}
+                </div>
+                <span className="block text-[9px] uppercase font-bold tracking-tighter mb-1" style={{ color: getRiskColor(data.metricRisks.vo2Max) }}>
+                  ● {getEkblomBakZoneLabel(data.fitness.vo2Max, data.age, normData) || getRiskLabel(data.metricRisks.vo2Max)}
+                </span>
+                <EkblomBakGraph
+                  vo2Max={data.fitness.vo2Max}
+                  age={data.age}
+                  normativeData={normData}
+                  width={310}
+                  height={100}
+                  interactive={false}
+                />
+              </div>
+
               {/* Blodanalys */}
-              <div className="bento-card p-7 bg-linear-to-br from-[#ffffff] to-[#F9F8F6]">
-                <h2 className="serif text-xl italic mb-3">Blodanalys</h2>
-                <div className="space-y-1.5 text-xs font-light">
+              <div className="bento-card p-5 bg-linear-to-br from-[#ffffff] to-[#F9F8F6]">
+                <h2 className="serif text-lg italic mb-2">Blodanalys</h2>
+                <div className="space-y-1 text-xs font-light">
                   {[
                     { label: 'Hemoglobin', displayValue: `${data.bloodWork.hb.toFixed(0)}`, unit: 'g/L', risk: data.metricRisks.hb, rawValue: data.bloodWork.hb, prevRawValue: previousData?.bloodWork.hb ?? null, delta: hbDelta, deltaKey: 'hb' as const, decimals: 1, metricKey: 'hb' as const },
                     { label: 'Glukos', displayValue: `${data.bloodWork.glucose}`, unit: 'mmol/L', risk: data.metricRisks.glucose, rawValue: data.bloodWork.glucose, prevRawValue: previousData?.bloodWork.glucose ?? null, delta: glucoseDelta, deltaKey: 'glucose' as const, decimals: 0, metricKey: 'glucose' as const },
                     { label: 'LDL', displayValue: `${data.bloodWork.ldl}`, unit: 'mmol/L', risk: data.metricRisks.ldl, rawValue: data.bloodWork.ldl, prevRawValue: previousData?.bloodWork.ldl ?? null, delta: ldlDelta, deltaKey: 'ldl' as const, decimals: 1, metricKey: 'ldl' as const },
                     { label: 'HDL', displayValue: `${data.bloodWork.hdl}`, unit: 'mmol/L', risk: data.metricRisks.hdl, rawValue: data.bloodWork.hdl, prevRawValue: previousData?.bloodWork.hdl ?? null, delta: hdlDelta, deltaKey: 'hdl' as const, decimals: 1, metricKey: 'hdl' as const },
                     { label: 'Triglycerider', displayValue: `${data.bloodWork.triglycerides}`, unit: 'mmol/L', risk: data.metricRisks.triglycerides, rawValue: data.bloodWork.triglycerides, prevRawValue: previousData?.bloodWork.triglycerides ?? null, delta: trigDelta, deltaKey: 'triglycerides' as const, decimals: 1, metricKey: 'triglycerides' as const },
+                    { label: 'TC/HDL Kvot', displayValue: `${tcHdlRatio}`, unit: '', risk: data.metricRisks.tcHdlRatio, rawValue: tcHdlRatio, prevRawValue: prevTcHdlRatio, delta: tcHdlDelta, deltaKey: 'tcHdlRatio' as const, decimals: 1, metricKey: 'tcHdlRatio' as const },
+                    { label: 'LDL/HDL Kvot', displayValue: `${ldlHdlRatio}`, unit: '', risk: data.metricRisks.ldlHdlRatio, rawValue: ldlHdlRatio, prevRawValue: prevLdlHdlRatio, delta: ldlHdlDelta, deltaKey: 'ldlHdlRatio' as const, decimals: 1, metricKey: 'ldlHdlRatio' as const },
                   ].map((m, idx, arr) => {
                     const ref = getBloodRefRange(m.metricKey, data.gender, data.age);
                     const percent = getBloodBarPercent(m.rawValue, ref.low, ref.high);
@@ -367,7 +440,7 @@ export const HTMLHealthReport = forwardRef<HTMLDivElement, HTMLHealthReportProps
                                 {m.delta > 0 ? '▲' : '▼'} {m.delta > 0 ? '+' : ''}{m.delta.toFixed(m.decimals)}
                               </span>
                             )}
-                            <span className="font-normal mr-1.5">{m.displayValue} {m.unit}</span>
+                            <span className="font-normal mr-1.5">{m.displayValue}{m.unit ? ` ${m.unit}` : ''}</span>
                             <span className="text-[9px] font-bold uppercase tracking-tighter" style={{ color: getRiskColor(m.risk) }}>
                               {getRiskLabel(m.risk)}
                             </span>
@@ -395,13 +468,6 @@ export const HTMLHealthReport = forwardRef<HTMLDivElement, HTMLHealthReportProps
             </div>
           </div>
 
-          {/* Focus Areas Footer — pushed to bottom of A4 page */}
-          {selectedFocusAreas && selectedFocusAreas.length > 0 && (
-            <div className="mt-auto pt-4">
-              <p className="serif text-lg italic text-[#4A4642] mb-3">Dina Fokusområden</p>
-              <FocusAreaCards selectedAreas={selectedFocusAreas} />
-            </div>
-          )}
         </div>
       </div>
     );

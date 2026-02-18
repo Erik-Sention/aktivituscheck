@@ -1,6 +1,6 @@
 import { RiskLevel } from '@/types/health';
 
-const LOWER_IS_BETTER = ['weight', 'bodyFat', 'ldl', 'triglycerides', 'glucose', 'systolic', 'diastolic', 'stress'];
+const LOWER_IS_BETTER = ['weight', 'bodyFat', 'visceralFat', 'ldl', 'triglycerides', 'glucose', 'tcHdlRatio', 'systolic', 'diastolic', 'stress'];
 
 export function computeDelta(current: number, previous?: number | null): number | null {
   if (previous == null) return null;

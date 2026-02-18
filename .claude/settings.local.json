@@ -10,7 +10,12 @@
       "Bash(ls -la \"c:\\\\Users\\\\erikh\\\\Documents\\\\aktivitus B2B PDF\\\\public\"\" 2>/dev/null || echo \"public directory check failed \")",
       "Bash(node:*)",
       "Bash(git init:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git branch:*)",
+      "Bash(git remote add:*)",
+      "Bash(git push:*)",
+      "Bash(npx tsc --noEmit)"
     ]
   }
 }

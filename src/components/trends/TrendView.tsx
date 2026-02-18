@@ -13,10 +13,12 @@ import {
   buildLifestyleZones,
   buildBloodRefZones,
   buildBodyFatZones,
+  buildVisceralFatZones,
   buildBPZones,
   buildVO2Zones,
   getZoneColor,
 } from './trendUtils';
+import { computeTcHdlRatio, computeLdlHdlRatio } from '@/utils/healthEvaluation';
 
 // Positional colors: same index = same color across all 3 lifestyle groups
 const POS_COLORS = ['#004B87', '#5B9289', '#C4A47C'] as const;
@@ -45,6 +47,7 @@ export function TrendView({ entries, onClose }: TrendViewProps) {
   // ── Zones ──
   const lifestyleZones = buildLifestyleZones();
   const bodyFatZones = buildBodyFatZones(gender);
+  const visceralFatZones = buildVisceralFatZones();
   const vo2Zones = buildVO2Zones(gender, age);
   const bpZones = buildBPZones();
   const hbZones = buildBloodRefZones('hb', gender, age);
@@ -52,6 +55,8 @@ export function TrendView({ entries, onClose }: TrendViewProps) {
   const hdlZones = buildBloodRefZones('hdl', gender, age);
   const ldlZones = buildBloodRefZones('ldl', gender, age);
   const trigZones = buildBloodRefZones('triglycerides', gender, age);
+  const tcHdlZones = buildBloodRefZones('tcHdlRatio', gender, age);
+  const ldlHdlZones = buildBloodRefZones('ldlHdlRatio', gender, age);
 
   // ── Helper: zone-based line color from latest value ──
   function zc(data: { value: number }[], zones: ReferenceZone[]): string {
@@ -86,6 +91,8 @@ export function TrendView({ entries, onClose }: TrendViewProps) {
   // ── Physical data ──
   const weightData = extractMetricData(sorted, e => e.bodyComposition.weight);
   const bodyFatData = extractMetricData(sorted, e => e.bodyComposition.bodyFat);
+  const muscleMassData = extractMetricData(sorted, e => e.bodyComposition.muscleMass);
+  const visceralFatData = extractMetricData(sorted, e => e.bodyComposition.visceralFat);
   const systolicData = extractMetricData(sorted, e => e.bloodPressure.systolic);
   const diastolicData = extractMetricData(sorted, e => e.bloodPressure.diastolic);
   const vo2Data = extractMetricData(sorted, e => e.fitness.vo2Max);
@@ -97,6 +104,8 @@ export function TrendView({ entries, onClose }: TrendViewProps) {
   const hdlData = extractMetricData(sorted, e => e.bloodWork.hdl);
   const ldlData = extractMetricData(sorted, e => e.bloodWork.ldl);
   const trigData = extractMetricData(sorted, e => e.bloodWork.triglycerides);
+  const tcHdlData = extractMetricData(sorted, e => computeTcHdlRatio(e.bloodWork));
+  const ldlHdlData = extractMetricData(sorted, e => computeLdlHdlRatio(e.bloodWork));
 
   const handleExportPDF = async () => {
     if (!printRef.current) return;
@@ -177,7 +186,7 @@ export function TrendView({ entries, onClose }: TrendViewProps) {
     return (
       <div
         ref={ref}
-        style={{ width: '794px', maxHeight: '1123px', padding: '20px 32px 16px' }}
+        style={{ width: '794px', padding: '20px 32px 16px' }}
         className="bg-[#F8F6F2]"
       >
         {/* Header — same structure as original health report */}
@@ -233,44 +242,51 @@ export function TrendView({ entries, onClose }: TrendViewProps) {
           </TrendChartCard>
 
           {/* 2. Physical — 4 columns */}
-          <TrendChartCard title="Fysisk Status" compact>
+          <TrendChartCard title="Kroppssammansättning" compact>
             <div className="grid grid-cols-4 gap-3">
               <TrendLineChart data={weightData} label="Vikt" unit="kg" color="#004B87" decimals={1} width={160} height={85} compact />
               <TrendLineChart data={bodyFatData} label="Kroppsfett" unit="%" zones={bodyFatZones} color={zc(bodyFatData, bodyFatZones)} decimals={1} width={160} height={85} compact />
-              <TrendLineChart data={vo2Data} label="VO₂ Max" unit="ml/min/kg" zones={vo2Zones} color={zc(vo2Data, vo2Zones)} decimals={1} width={160} height={85} compact />
-              <TrendLineChart data={gripData} label="Greppstyrka" unit="kg" color="#004B87" decimals={0} width={160} height={85} compact />
+              <TrendLineChart data={muscleMassData} label="Muskelmassa" unit="%" color="#004B87" decimals={1} width={160} height={85} compact />
+              <TrendLineChart data={visceralFatData} label="Visceralt fett" unit="/20" zones={visceralFatZones} color={zc(visceralFatData, visceralFatZones)} decimals={0} width={160} height={85} compact />
             </div>
           </TrendChartCard>
 
-          {/* 3. Blood pressure */}
-          <TrendChartCard title="Blodtryck" compact>
-            <TrendLineChart
-              data={systolicData}
-              label="Systoliskt / Diastoliskt"
-              unit="mmHg"
-              zones={bpZones}
-              color={zc(systolicData, bpZones)}
-              secondaryData={diastolicData}
-              secondaryColor="#8FB3A3"
-              secondaryLabel="Diastoliskt"
-              width={690}
-              height={100}
-              decimals={0}
-              legendItems={[
-                { label: 'Systoliskt', color: zc(systolicData, bpZones) },
-                { label: 'Diastoliskt', color: '#8FB3A3' },
-              ]}
-            />
+          {/* 3. Kondition + Blodtryck — 3 columns */}
+          <TrendChartCard title="Kondition, Greppstyrka & Blodtryck" compact>
+            <div className="grid grid-cols-3 gap-3">
+              <TrendLineChart data={vo2Data} label="VO₂ Max" unit="ml/min/kg" zones={vo2Zones} color={zc(vo2Data, vo2Zones)} decimals={1} width={220} height={85} compact />
+              <TrendLineChart data={gripData} label="Greppstyrka" unit="kg" color="#004B87" decimals={0} width={220} height={85} compact />
+              <TrendLineChart
+                data={systolicData}
+                label="Blodtryck"
+                unit="mmHg"
+                zones={bpZones}
+                color={zc(systolicData, bpZones)}
+                secondaryData={diastolicData}
+                secondaryColor="#8FB3A3"
+                secondaryLabel="Diastoliskt"
+                width={220}
+                height={85}
+                decimals={0}
+                compact
+                legendItems={[
+                  { label: 'Sys', color: zc(systolicData, bpZones) },
+                  { label: 'Dia', color: '#8FB3A3' },
+                ]}
+              />
+            </div>
           </TrendChartCard>
 
-          {/* 4. Blood analysis — 5 columns */}
+          {/* 5. Blood analysis — 7 columns */}
           <TrendChartCard title="Blodanalys" compact>
-            <div className="grid grid-cols-5 gap-2">
-              <TrendLineChart data={hbData} label="Hemoglobin" unit="g/L" zones={hbZones} color={zc(hbData, hbZones)} width={128} height={85} decimals={0} compact />
-              <TrendLineChart data={glucoseData} label="Glukos" unit="mmol/L" zones={glucoseZones} color={zc(glucoseData, glucoseZones)} width={128} height={85} decimals={1} compact />
-              <TrendLineChart data={hdlData} label="HDL" unit="mmol/L" zones={hdlZones} color={zc(hdlData, hdlZones)} width={128} height={85} decimals={1} compact />
-              <TrendLineChart data={ldlData} label="LDL" unit="mmol/L" zones={ldlZones} color={zc(ldlData, ldlZones)} width={128} height={85} decimals={1} compact />
-              <TrendLineChart data={trigData} label="Triglycerider" unit="mmol/L" zones={trigZones} color={zc(trigData, trigZones)} width={128} height={85} decimals={1} compact />
+            <div className="grid grid-cols-7 gap-2">
+              <TrendLineChart data={hbData} label="Hemoglobin" unit="g/L" zones={hbZones} color={zc(hbData, hbZones)} width={90} height={85} decimals={0} compact />
+              <TrendLineChart data={glucoseData} label="Glukos" unit="mmol/L" zones={glucoseZones} color={zc(glucoseData, glucoseZones)} width={90} height={85} decimals={1} compact />
+              <TrendLineChart data={hdlData} label="HDL" unit="mmol/L" zones={hdlZones} color={zc(hdlData, hdlZones)} width={90} height={85} decimals={1} compact />
+              <TrendLineChart data={ldlData} label="LDL" unit="mmol/L" zones={ldlZones} color={zc(ldlData, ldlZones)} width={90} height={85} decimals={1} compact />
+              <TrendLineChart data={trigData} label="Triglyc." unit="mmol/L" zones={trigZones} color={zc(trigData, trigZones)} width={90} height={85} decimals={1} compact />
+              <TrendLineChart data={tcHdlData} label="TC/HDL" unit="kvot" zones={tcHdlZones} color={zc(tcHdlData, tcHdlZones)} width={90} height={85} decimals={1} compact />
+              <TrendLineChart data={ldlHdlData} label="LDL/HDL" unit="kvot" zones={ldlHdlZones} color={zc(ldlHdlData, ldlHdlZones)} width={90} height={85} decimals={1} compact />
             </div>
           </TrendChartCard>
         </div>
