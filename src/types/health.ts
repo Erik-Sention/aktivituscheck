@@ -1,11 +1,13 @@
 export type RiskLevel = 'optimal' | 'good' | 'warning' | 'high-risk';
 
 export interface BloodWork {
-  hb: number; // Hemoglobin (g/dL)
-  glucose: number; // Fasting glucose (mg/dL)
-  hdl: number; // HDL cholesterol (mg/dL)
-  ldl: number; // LDL cholesterol (mg/dL)
-  triglycerides: number; // Triglycerides (mg/dL)
+  hb: number; // Hemoglobin (g/L)
+  glucose: number; // Fasting glucose (mmol/L)
+  hdl: number; // HDL cholesterol (mmol/L)
+  ldl: number; // LDL cholesterol (mmol/L)
+  triglycerides: number; // Triglycerides (mmol/L)
+  tcHdlRatio?: number; // TC/HDL kvot (computed if not provided)
+  ldlHdlRatio?: number; // LDL/HDL kvot (computed if not provided)
 }
 
 export interface LifestyleRatings {
@@ -44,7 +46,8 @@ export interface HealthData {
   bodyComposition: BodyComposition;
   bloodPressure: BloodPressure;
   date: string;
-  name?: string;
+  firstname?: string;
+  lastname?: string;
   personnummer?: string;
   age?: number;
   gender?: 'male' | 'female';

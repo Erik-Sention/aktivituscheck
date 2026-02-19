@@ -68,9 +68,10 @@ export default function DashboardPage() {
       const html2pdf = (await import('html2pdf.js')).default;
       const element = reportRef.current;
 
+      const fullName = [evaluatedData.firstname, evaluatedData.lastname].filter(Boolean).join('_') || 'rapport';
       const opt: Record<string, unknown> = {
         margin: 0,
-        filename: `aktivitus_rapport_${evaluatedData.name?.replace(/\s+/g, '_') || 'rapport'}_${evaluatedData.personnummer?.replace(/[\s-]/g, '') || ''}_${evaluatedData.date}.pdf`,
+        filename: `aktivitus_rapport_${fullName}_${evaluatedData.personnummer?.replace(/[\s-]/g, '') || ''}_${evaluatedData.date}.pdf`,
         image: { type: 'png', quality: 0.98 },
         html2canvas: { scale: 3, logging: false, useCORS: true },
         jsPDF: { orientation: 'portrait', unit: 'in', format: 'a4' },
@@ -196,7 +197,7 @@ export default function DashboardPage() {
           <div>
             <h1 className="text-lg font-bold aktivitus-blue">Hälsorapport</h1>
             <p className="text-sm text-[#B5AFA2]">
-              {evaluatedData.name} &bull; {new Date(evaluatedData.date).toLocaleDateString('sv-SE')}
+              {[evaluatedData.firstname, evaluatedData.lastname].filter(Boolean).join(' ') || 'Klient'} &bull; {new Date(evaluatedData.date).toLocaleDateString('sv-SE')}
             </p>
           </div>
           <div className="flex gap-3">

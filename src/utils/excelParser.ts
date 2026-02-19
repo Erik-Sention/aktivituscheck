@@ -80,7 +80,8 @@ export function parseExcelFile(file: File): Promise<HealthData[]> {
           const age = ageRaw > 0 ? ageRaw : pnrParsed.age || undefined;
 
           const healthData: HealthData = {
-            name: row['Name'] || row['name'] || row['Namn'] || 'Anonymous',
+            firstname: row['Firstname'] || row['firstname'] || row['Förnamn'] || row['Name']?.split(' ')[0] || row['Namn']?.split(' ')[0] || undefined,
+            lastname: row['Lastname'] || row['lastname'] || row['Efternamn'] || row['Name']?.split(' ').slice(1).join(' ') || row['Namn']?.split(' ').slice(1).join(' ') || undefined,
             personnummer: pnr || undefined,
             date: row['Date'] || row['date'] || row['Datum'] || new Date().toISOString().split('T')[0],
             bloodWork: {
@@ -89,6 +90,8 @@ export function parseExcelFile(file: File): Promise<HealthData[]> {
               hdl: parseFloat(row['HDL'] || row['hdl'] || 1.3),
               ldl: parseFloat(row['LDL'] || row['ldl'] || 3.0),
               triglycerides: parseFloat(row['Triglycerides'] || row['Trig'] || row['triglycerides'] || row['Triglycerider'] || 1.5),
+              tcHdlRatio: row['TC/HDL'] || row['TC/HDL Kvot'] || row['tcHdlRatio'] ? parseFloat(row['TC/HDL'] || row['TC/HDL Kvot'] || row['tcHdlRatio']) : undefined,
+              ldlHdlRatio: row['LDL/HDL'] || row['LDL/HDL Kvot'] || row['ldlHdlRatio'] ? parseFloat(row['LDL/HDL'] || row['LDL/HDL Kvot'] || row['ldlHdlRatio']) : undefined,
             },
             lifestyle: {
               sleep: parseInt(row['Sleep'] || row['sleep'] || row['Sömn'] || 7),
@@ -150,13 +153,23 @@ export function generateSampleExcel(): Blob {
   const sixMonthsAgo = new Date(today);
   sixMonthsAgo.setMonth(today.getMonth() - 6);
 
+  // Helper function to compute ratios
+  const computeRatios = (hdl: number, ldl: number, trig: number) => {
+    const tc = ldl + hdl + trig / 2.2;
+    return {
+      'TC/HDL Kvot': Math.round((tc / hdl) * 10) / 10,
+      'LDL/HDL Kvot': Math.round((ldl / hdl) * 10) / 10,
+    };
+  };
+
   // Swedish sample data — personnummer 3rd-to-last digit even = kvinna
   // Anna Lindgren, born 1990-08-14, female (8 is even)
   // Blood values in Swedish units: g/L (Hb), mmol/L (glucose, LDL, HDL, triglycerides)
   // Progression: warning values → improving → mostly optimal
   const data = [
     {
-      Name: 'Anna Lindgren',
+      Firstname: 'Anna',
+      Lastname: 'Lindgren',
       Personnummer: '19900814-2384',
       Date: sixMonthsAgo.toISOString().split('T')[0],
       Hemoglobin: 119,
@@ -164,6 +177,7 @@ export function generateSampleExcel(): Blob {
       HDL: 1.0,
       LDL: 4.0,
       Triglycerides: 2.5,
+      ...computeRatios(1.0, 4.0, 2.5),
       Sömn: 5,
       Kost: 5,
       Stress: 4,
@@ -183,7 +197,8 @@ export function generateSampleExcel(): Blob {
       Diastolic: 82,
     },
     {
-      Name: 'Anna Lindgren',
+      Firstname: 'Anna',
+      Lastname: 'Lindgren',
       Personnummer: '19900814-2384',
       Date: threeMonthsAgo.toISOString().split('T')[0],
       Hemoglobin: 126,
@@ -191,6 +206,7 @@ export function generateSampleExcel(): Blob {
       HDL: 1.2,
       LDL: 3.5,
       Triglycerides: 2.0,
+      ...computeRatios(1.2, 3.5, 2.0),
       Sömn: 6,
       Kost: 7,
       Stress: 5,
@@ -210,7 +226,8 @@ export function generateSampleExcel(): Blob {
       Diastolic: 78,
     },
     {
-      Name: 'Anna Lindgren',
+      Firstname: 'Anna',
+      Lastname: 'Lindgren',
       Personnummer: '19900814-2384',
       Date: today.toISOString().split('T')[0],
       Hemoglobin: 133,
@@ -218,6 +235,7 @@ export function generateSampleExcel(): Blob {
       HDL: 1.5,
       LDL: 2.8,
       Triglycerides: 1.3,
+      ...computeRatios(1.5, 2.8, 1.3),
       Sömn: 8,
       Kost: 8,
       Stress: 6,

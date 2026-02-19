@@ -37,6 +37,7 @@ yarn-error.log*
 # sensitive data
 /mock-data/
 generate-mock-data.mjs
+nytt kontent.md
 
 # typescript
 *.tsbuildinfo

@@ -150,7 +150,7 @@ export const HTMLHealthReport = forwardRef<HTMLDivElement, HTMLHealthReportProps
           {/* Header */}
           <header className="flex justify-between items-start mb-4">
             <div>
-              <p className="serif text-xl italic text-[#4A4642]">{data.name || 'Klient'}</p>
+              <p className="serif text-xl italic text-[#4A4642]">{[data.firstname, data.lastname].filter(Boolean).join(' ') || 'Klient'}</p>
               {data.personnummer && (
                 <p className="text-[10px] uppercase tracking-[0.2em] text-[#B5AFA2] mt-1">{data.personnummer}</p>
               )}

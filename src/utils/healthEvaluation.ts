@@ -90,13 +90,17 @@ export function getBloodRefRange(
 }
 
 // Compute TC/HDL ratio from blood values (Friedewald: TC = LDL + HDL + TG/2.2)
-export function computeTcHdlRatio(bloodWork: { hdl: number; ldl: number; triglycerides: number }): number {
+// Returns provided value if available, otherwise computes from LDL, HDL, and triglycerides
+export function computeTcHdlRatio(bloodWork: { hdl: number; ldl: number; triglycerides: number; tcHdlRatio?: number }): number {
+  if (bloodWork.tcHdlRatio !== undefined) return bloodWork.tcHdlRatio;
   const tc = bloodWork.ldl + bloodWork.hdl + bloodWork.triglycerides / 2.2;
   return Math.round((tc / bloodWork.hdl) * 10) / 10;
 }
 
 // Compute LDL/HDL ratio
-export function computeLdlHdlRatio(bloodWork: { hdl: number; ldl: number }): number {
+// Returns provided value if available, otherwise computes from LDL and HDL
+export function computeLdlHdlRatio(bloodWork: { hdl: number; ldl: number; ldlHdlRatio?: number }): number {
+  if (bloodWork.ldlHdlRatio !== undefined) return bloodWork.ldlHdlRatio;
   return Math.round((bloodWork.ldl / bloodWork.hdl) * 10) / 10;
 }
 
