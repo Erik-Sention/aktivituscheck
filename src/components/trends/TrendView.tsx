@@ -40,6 +40,7 @@ export function TrendView({ entries, onClose }: TrendViewProps) {
   const latest = sorted[sorted.length - 1];
   const gender = latest.gender;
   const age = latest.age;
+  const name = [latest.firstname, latest.lastname].filter(Boolean).join(' ') || 'Klient';
 
   const firstDate = new Date(sorted[0].date).toLocaleDateString('sv-SE', { month: 'short', year: 'numeric' });
   const lastDate = new Date(sorted[sorted.length - 1].date).toLocaleDateString('sv-SE', { month: 'short', year: 'numeric' });
@@ -114,7 +115,7 @@ export function TrendView({ entries, onClose }: TrendViewProps) {
       const html2pdf = (await import('html2pdf.js')).default;
       const opt: Record<string, unknown> = {
         margin: 0,
-        filename: `aktivitus_trender_${latest.name?.replace(/\s+/g, '_') || 'rapport'}_${latest.personnummer?.replace(/[\s-]/g, '') || ''}_${firstDate.replace(/\s+/g, '')}-${lastDate.replace(/\s+/g, '')}.pdf`,
+        filename: `aktivitus_trender_${name.replace(/\s+/g, '_')}_${latest.personnummer?.replace(/[\s-]/g, '') || ''}_${firstDate.replace(/\s+/g, '')}-${lastDate.replace(/\s+/g, '')}.pdf`,
         image: { type: 'png', quality: 0.98 },
         html2canvas: { scale: 3, logging: false, useCORS: true },
         jsPDF: { orientation: 'portrait', unit: 'in', format: 'a4' },
@@ -137,7 +138,7 @@ export function TrendView({ entries, onClose }: TrendViewProps) {
           <div>
             <h1 className="text-lg font-bold aktivitus-blue">Trendgrafer</h1>
             <p className="text-sm text-[#B5AFA2]">
-              {latest.name} &bull; {firstDate} – {lastDate} &bull; {sorted.length} mätningar
+              {name} &bull; {firstDate} – {lastDate} &bull; {sorted.length} mätningar
             </p>
           </div>
           <div className="flex gap-3">
@@ -192,7 +193,7 @@ export function TrendView({ entries, onClose }: TrendViewProps) {
         {/* Header — same structure as original health report */}
         <header className="flex justify-between items-start mb-3">
           <div>
-            <p className="serif text-xl italic text-[#4A4642]">{latest.name || 'Klient'}</p>
+            <p className="serif text-xl italic text-[#4A4642]">{name}</p>
             {latest.personnummer && (
               <p className="text-[10px] uppercase tracking-[0.2em] text-[#B5AFA2] mt-1">{latest.personnummer}</p>
             )}
