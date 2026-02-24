@@ -29,6 +29,7 @@ export default function DashboardPage() {
   const [allEntries, setAllEntries] = useState<EvaluatedHealthData[]>([]);
   const [loading, setLoading] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [isExportingJPEG, setIsExportingJPEG] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedFocusKeys, setSelectedFocusKeys] = useState<string[]>([]);
   const [showTrends, setShowTrends] = useState(false);
@@ -84,6 +85,25 @@ export default function DashboardPage() {
       alert('PDF-export misslyckades. Försök igen.');
     } finally {
       setIsExporting(false);
+    }
+  };
+
+  const handleExportJPEG = async () => {
+    if (!reportRef.current || !evaluatedData) return;
+    setIsExportingJPEG(true);
+    try {
+      const html2canvas = (await import('html2canvas')).default;
+      const canvas = await html2canvas(reportRef.current, { scale: 2, useCORS: true });
+      const fullName = [evaluatedData.firstname, evaluatedData.lastname].filter(Boolean).join('_') || 'rapport';
+      const link = document.createElement('a');
+      link.download = `aktivitus_rapport_${fullName}_${evaluatedData.personnummer?.replace(/[\s-]/g, '') || ''}_${evaluatedData.date}.jpg`;
+      link.href = canvas.toDataURL('image/jpeg', 0.92);
+      link.click();
+    } catch (error) {
+      console.error('JPEG export failed:', error);
+      alert('JPEG-export misslyckades. Försök igen.');
+    } finally {
+      setIsExportingJPEG(false);
     }
   };
 
@@ -220,6 +240,17 @@ export default function DashboardPage() {
               className="px-4 py-2 text-sm font-medium text-[#4A4642] border border-[#E5E0D8] rounded-lg hover:bg-[#F0EDE8] transition-colors"
             >
               Ladda upp ny fil
+            </button>
+            <button
+              onClick={handleExportJPEG}
+              disabled={isExportingJPEG}
+              className={`px-6 py-2 text-sm font-semibold rounded-lg transition-colors ${
+                isExportingJPEG
+                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  : 'bg-[#5B9289] text-white hover:bg-[#4a7a72]'
+              }`}
+            >
+              {isExportingJPEG ? 'Skapar JPEG...' : 'Exportera JPEG'}
             </button>
             <button
               onClick={handleExportPDF}

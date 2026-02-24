@@ -31,6 +31,7 @@ interface TrendViewProps {
 export function TrendView({ entries, onClose }: TrendViewProps) {
   const printRef = useRef<HTMLDivElement>(null);
   const [isExporting, setIsExporting] = useState(false);
+  const [isExportingJPEG, setIsExportingJPEG] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
 
   const sorted = [...entries].sort(
@@ -130,6 +131,24 @@ export function TrendView({ entries, onClose }: TrendViewProps) {
     }
   };
 
+  const handleExportJPEG = async () => {
+    if (!printRef.current) return;
+    setIsExportingJPEG(true);
+    try {
+      const html2canvas = (await import('html2canvas')).default;
+      const canvas = await html2canvas(printRef.current, { scale: 2, useCORS: true });
+      const link = document.createElement('a');
+      link.download = `aktivitus_trender_${name.replace(/\s+/g, '_')}_${latest.personnummer?.replace(/[\s-]/g, '') || ''}_${firstDate.replace(/\s+/g, '')}-${lastDate.replace(/\s+/g, '')}.jpg`;
+      link.href = canvas.toDataURL('image/jpeg', 0.92);
+      link.click();
+    } catch (error) {
+      console.error('JPEG export failed:', error);
+      alert('JPEG-export misslyckades. Försök igen.');
+    } finally {
+      setIsExportingJPEG(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#F8F6F2]">
       {/* Sticky header (not in PDF) */}
@@ -147,6 +166,17 @@ export function TrendView({ entries, onClose }: TrendViewProps) {
               className="px-4 py-2 text-sm font-medium text-[#4A4642] border border-[#E5E0D8] rounded-lg hover:bg-[#F0EDE8] transition-colors"
             >
               Förstora
+            </button>
+            <button
+              onClick={handleExportJPEG}
+              disabled={isExportingJPEG}
+              className={`px-6 py-2 text-sm font-semibold rounded-lg transition-colors ${
+                isExportingJPEG
+                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  : 'bg-[#5B9289] text-white hover:bg-[#4a7a72]'
+              }`}
+            >
+              {isExportingJPEG ? 'Skapar JPEG...' : 'Exportera JPEG'}
             </button>
             <button
               onClick={handleExportPDF}
