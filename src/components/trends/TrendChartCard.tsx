@@ -14,7 +14,7 @@ export function TrendChartCard({ title, colSpan = 1, compact = false, children }
     <div
       className={`bento-card ${compact ? 'px-5 pt-4 pb-3' : 'p-6'} ${colSpan === 2 ? 'col-span-2' : ''}`}
     >
-      <h3 className={`serif italic text-[#4A4642] ${compact ? 'text-sm mb-2.5' : 'text-lg mb-4'}`}>{title}</h3>
+      <h3 className={`font-extrabold uppercase tracking-wide text-[#004B87] ${compact ? 'text-xs mb-2.5' : 'text-sm mb-4'}`}>{title}</h3>
       {children}
     </div>
   );

@@ -82,6 +82,17 @@ const STRENGTH_INSIGHTS: Record<string, string> = {
   alcohol: 'Dina alkoholvanor gynnar din övergripande hälsa.',
 };
 
+const FOCUS_TIPS: Record<string, string> = {
+  sleep:         'En god natts sömn är kroppens viktigaste återhämtning. Sikta på 7–8 timmar regelbundet.',
+  diet:          'Maten du äter är information till din kropp — välj den med omsorg.',
+  stress:        'Fem minuters djupandning per dag kan sänka stressnivåer och förbättra sömnkvaliteten.',
+  relationships: 'Starka sociala band är en av de kraftfullaste skyddsfaktorerna för långsiktig hälsa.',
+  smoking:       'Varje rökfri dag stärker ditt hjärta, dina lungor och din kondition märkbart.',
+  balance:       'Återhämtning är inte lättja — det är en förutsättning för prestation och välmående.',
+  exercise:      'Regelbunden rörelse förbättrar kondition, hormoner och humör på bara några veckor.',
+  alcohol:       'Att minska alkoholen förbättrar sömn, energi och leverparametrar redan på kort sikt.',
+};
+
 interface HTMLHealthReportProps {
   data: EvaluatedHealthData;
   previousData?: EvaluatedHealthData | null;
@@ -145,16 +156,16 @@ export const HTMLHealthReport = forwardRef<HTMLDivElement, HTMLHealthReportProps
     const normData = ekblomBakData || getEkblomBakData(data.gender);
 
     return (
-      <div ref={ref} className="px-8 pt-8 pb-3 bg-[#F8F6F2] flex flex-col" style={{ width: '794px', maxHeight: '1122px' }}>
+      <div ref={ref} className="px-8 pt-8 pb-3 bg-white flex flex-col" style={{ width: '794px', maxHeight: '1122px', borderTop: '4px solid #004B87' }}>
         <div className="flex-1 flex flex-col">
           {/* Header */}
           <header className="flex justify-between items-start mb-4">
             <div>
-              <p className="serif text-xl italic text-[#4A4642]">{[data.firstname, data.lastname].filter(Boolean).join(' ') || 'Klient'}</p>
+              <p className="font-bold text-base text-[#1C2B3A]">{[data.firstname, data.lastname].filter(Boolean).join(' ') || 'Klient'}</p>
               {data.personnummer && (
-                <p className="text-[10px] uppercase tracking-[0.2em] text-[#B5AFA2] mt-1">{data.personnummer}</p>
+                <p className="text-[10px] uppercase tracking-[0.15em] text-[#7a8a9a] mt-1">{data.personnummer}</p>
               )}
-              <p className="text-[10px] uppercase tracking-[0.2em] text-[#B5AFA2] mt-1">
+              <p className="text-[10px] uppercase tracking-[0.15em] text-[#7a8a9a] mt-1">
                 {new Date(data.date).toLocaleDateString('sv-SE', { year: 'numeric', month: 'long', day: 'numeric' })}
               </p>
             </div>
@@ -170,7 +181,7 @@ export const HTMLHealthReport = forwardRef<HTMLDivElement, HTMLHealthReportProps
 
             {/* Lifestyle Metrics Card */}
             <div className="bento-card p-6">
-              <h2 className="serif text-xl mb-4 italic">Livsstil</h2>
+              <h2 className="text-base font-extrabold mb-4 uppercase tracking-wide text-[#004B87]">Livsstil</h2>
               <div className="space-y-3">
                 {items.map((item, idx) => {
                   const diff = prevItems ? item.value - prevItems[idx].value : null;
@@ -197,16 +208,16 @@ export const HTMLHealthReport = forwardRef<HTMLDivElement, HTMLHealthReportProps
                               backgroundSize: getSliderBackgroundSize(item.value),
                             }}
                           />
-                          {prevItems && prevItems[idx].value > item.value && (
-                            <div
-                              className="slider-drop"
-                              style={{
-                                left: `${item.value * 10}%`,
-                                width: `${(prevItems[idx].value - item.value) * 10}%`,
-                              }}
-                            />
-                          )}
                         </div>
+                        {diff !== null && diff !== 0 && (
+                          <div style={{
+                            position: 'absolute', top: '1px',
+                            left: `${Math.min(item.value, prevItems![idx].value) * 10}%`,
+                            width: `${Math.abs(diff) * 10}%`,
+                            height: '14px', borderRadius: '100px', pointerEvents: 'none',
+                            background: 'repeating-linear-gradient(-45deg, rgba(196,160,138,0.4) 0px, rgba(196,160,138,0.4) 2px, rgba(196,160,138,0) 2px, rgba(196,160,138,0) 6px)',
+                          }} />
+                        )}
                         <div className="slider-knob" style={{ left: `${item.value * 10}%`, width: '20px', height: '20px', top: '-3px', marginLeft: '-10px' }}></div>
                       </div>
                     </div>
@@ -214,54 +225,55 @@ export const HTMLHealthReport = forwardRef<HTMLDivElement, HTMLHealthReportProps
                 })}
               </div>
 
-              {/* Average & Change */}
-              <div className="mt-5 pt-4 border-t border-[#F5F2EE]">
-                <div className="flex justify-between items-baseline">
-                  <span className="text-[9px] uppercase tracking-widest font-semibold text-[#9A9488]">Medelvärde</span>
+              {/* Zon 1: Medelvärde — ljusblå pill-bar */}
+              <div className="mt-4" style={{ background: '#EEF4FB', borderRadius: '8px', padding: '8px 12px' }}>
+                <div className="flex justify-between items-center">
+                  <span className="text-[9px] uppercase tracking-widest font-semibold text-[#6B9CC7]">Medelvärde</span>
                   <div className="flex items-baseline gap-2">
-                    <span className="text-lg font-light tracking-tight">{average.toFixed(1)}<span className="text-[10px] opacity-40">/10</span></span>
+                    <span className="text-base font-light tracking-tight text-[#1C2B3A]">
+                      {average.toFixed(1)}<span className="text-[9px] opacity-40">/10</span>
+                    </span>
+                    {avgDiff !== null && avgDiff !== 0 && (
+                      <span className="text-[9px] font-bold" style={{ color: getDeltaColor('lifestyle', avgDiff) }}>
+                        {avgDiff > 0 ? '▲ +' : '▼ '}{avgDiff.toFixed(1)}
+                      </span>
+                    )}
                   </div>
                 </div>
-                {avgDiff !== null && (
-                  <div className="flex justify-between items-baseline mt-1">
-                    <span className="text-[9px] uppercase tracking-widest text-[#B5AFA2]">Sedan förra</span>
-                    <span className="text-[10px] font-bold tracking-tight" style={{ color: avgDiff === 0 ? '#9A9488' : getDeltaColor('lifestyle', avgDiff) }}>
-                      {avgDiff > 0 ? '▲ +' : avgDiff < 0 ? '▼ ' : '– '}{avgDiff.toFixed(1)}
-                    </span>
-                  </div>
-                )}
               </div>
 
-              {/* Störst framsteg / Dina styrkor */}
-              <div className="mt-3 pt-3 border-t border-[#F5F2EE]">
-                <p className="text-[9px] uppercase tracking-widest font-semibold text-[#9A9488] mb-2">
+              {/* Zon 2 + 3: Unified kort med vit bakgrund och blå ram */}
+              <div className="mt-3" style={{ background: '#FFFFFF', border: '1.5px solid #CDDFF2', borderRadius: '10px', padding: '10px 12px' }}>
+
+                {/* Zon 2: Störst framsteg / Dina styrkor */}
+                <p className="text-[9px] uppercase tracking-widest font-semibold text-[#004B87] mb-1.5">
                   {hasProgress ? 'Störst framsteg' : 'Dina styrkor'}
                 </p>
                 {hasProgress ? (
                   manyTiedProgress.length > 0 ? (
-                    <p className="text-[10px] text-[#4A4642] mb-1">
-                      <span className="text-[9px] font-bold" style={{ color: '#10b981' }}>▲</span>{' '}
-                      {manyTiedProgress.length} av {items.length} områden förbättrades med +{topDiff} ({manyTiedProgress.map(i => i.label).join(', ')})
+                    <p className="text-[10px] text-[#4A4642] mb-0.5">
+                      <span className="text-[9px] font-bold" style={{ color: '#0072BC' }}>▲</span>{' '}
+                      {manyTiedProgress.length} av {items.length} områden förbättrades med +{topDiff}
                     </p>
                   ) : (
                     lifestyleProgress.map(item => (
-                      <div key={item.key} className="flex items-center gap-1.5 mb-1">
-                        <span className="text-[9px] font-bold" style={{ color: '#10b981' }}>▲</span>
-                        <span className="text-[10px] text-[#4A4642]">{item.label}</span>
-                        <span className="text-[10px] font-bold" style={{ color: '#10b981' }}>+{item.diff}</span>
+                      <div key={item.key} className="flex items-center gap-1.5 mb-0.5">
+                        <span className="text-[9px] font-bold" style={{ color: '#0072BC' }}>▲</span>
+                        <span className="text-[10px] font-semibold text-[#1C2B3A]">{item.label}</span>
+                        <span className="text-[10px] font-bold" style={{ color: '#0072BC' }}>+{item.diff}</span>
                       </div>
                     ))
                   )
                 ) : (
                   topStrengths.map(item => (
-                    <div key={item.key} className="flex items-center gap-1.5 mb-1">
+                    <div key={item.key} className="flex items-center gap-1.5 mb-0.5">
                       <span className="text-[9px] font-bold" style={{ color: '#0072bc' }}>★</span>
-                      <span className="text-[10px] text-[#4A4642]">{item.label}</span>
+                      <span className="text-[10px] font-semibold text-[#1C2B3A]">{item.label}</span>
                       <span className="text-[10px] font-bold" style={{ color: '#0072bc' }}>{item.value}/10</span>
                     </div>
                   ))
                 )}
-                <p className="text-[8px] italic text-[#9A9488] mt-1.5 leading-relaxed">
+                <p className="text-[8px] italic text-[#7a8a9a] mt-1 leading-relaxed">
                   {hasProgress
                     ? manyTiedProgress.length > 0
                       ? 'Bred förbättring över flera områden visar på en positiv helhetsutveckling.'
@@ -270,24 +282,42 @@ export const HTMLHealthReport = forwardRef<HTMLDivElement, HTMLHealthReportProps
                   }
                 </p>
 
-                {/* Fokusområden — inline i samma kort */}
+                {/* Divider + Zon 3: Fokusområden */}
                 {selectedFocusAreas && selectedFocusAreas.length > 0 && (
-                  <div className="mt-3 pt-3 border-t border-[#F5F2EE]">
-                    <p className="text-[9px] uppercase tracking-widest font-semibold text-[#9A9488] mb-2">
+                  <>
+                    <div style={{ borderTop: '1px solid #E0EEFA', margin: '8px 0' }} />
+                    <p className="text-[9px] uppercase tracking-widest font-semibold text-[#004B87] mb-2">
                       Fokusområden
                     </p>
                     <div className="space-y-1.5">
-                      {selectedFocusAreas.map((area) => (
-                        <div key={area.key} className="flex items-start gap-1.5">
-                          <span className="text-[9px] font-bold" style={{ color: '#8FB3A3' }}>◆</span>
+                      {selectedFocusAreas.map((area, idx) => (
+                        <div
+                          key={area.key}
+                          style={{ background: '#EEF4FB', borderRadius: '6px', borderLeft: '3px solid #004B87', padding: '7px 10px', display: 'flex', alignItems: 'flex-start', gap: '8px', marginLeft: `${idx * 18}px` }}
+                        >
+                          <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#004B87', marginTop: '4px', flexShrink: 0 }} />
                           <div>
-                            <span className="text-[10px] font-semibold text-[#4A4642]">{area.label}</span>
-                            <span className="text-[8px] text-[#9A9488] ml-1">{area.description}</span>
+                            <div className="text-[10px] font-semibold text-[#1C2B3A]">{area.label}</div>
+                            <div className="text-[8px] text-[#7a8a9a] mt-0.5 leading-relaxed">{area.description}</div>
                           </div>
                         </div>
                       ))}
                     </div>
-                  </div>
+                    {FOCUS_TIPS[selectedFocusAreas[0].key] && (
+                      <>
+                        <div style={{ borderTop: '1px solid #E0EEFA', margin: '8px 0' }} />
+                        <div style={{ position: 'relative', paddingLeft: '18px' }}>
+                          <span style={{ position: 'absolute', left: 0, top: '-4px', fontSize: '22px', lineHeight: 1, color: '#CDDFF2', fontFamily: 'Georgia, serif' }}>&ldquo;</span>
+                          <p className="text-[8px] italic text-[#7a8a9a] leading-relaxed">
+                            {FOCUS_TIPS[selectedFocusAreas[0].key]}
+                          </p>
+                          <p className="text-[7px] text-[#6B9CC7] uppercase tracking-widest mt-1 text-right">
+                            — {selectedFocusAreas[0].label}
+                          </p>
+                        </div>
+                      </>
+                    )}
+                  </>
                 )}
               </div>
             </div>
@@ -297,13 +327,13 @@ export const HTMLHealthReport = forwardRef<HTMLDivElement, HTMLHealthReportProps
 
               {/* Fysisk Status */}
               <div className="bento-card p-6">
-                <h2 className="serif text-xl italic mb-3">Fysisk Status</h2>
+                <h2 className="text-base font-extrabold mb-3 uppercase tracking-wide text-[#004B87]">Fysisk Status</h2>
 
                 {/* Row 1: Vikt + Kroppsfett + Blodtryck */}
-                <div className="grid grid-cols-3 gap-3 pb-2.5 border-b border-[#F5F2EE]">
+                <div className="grid grid-cols-3 gap-3 pb-2.5 border-b border-[#D9EAF7]">
                   <div>
                     <p className="text-[8px] uppercase text-[#7a8a9a] mb-0.5">Vikt</p>
-                    <span className="text-2xl font-extralight tracking-tighter">{data.bodyComposition.weight}</span>
+                    <span className="text-2xl font-light tracking-tighter">{data.bodyComposition.weight}</span>
                     <span className="text-[10px] ml-1 opacity-40 uppercase">kg</span>
                     {weightDelta !== null && weightDelta !== 0 && (
                       <span className="block text-[8px] font-bold" style={{ color: '#9A9488' }}>
@@ -313,7 +343,7 @@ export const HTMLHealthReport = forwardRef<HTMLDivElement, HTMLHealthReportProps
                   </div>
                   <div>
                     <p className="text-[8px] uppercase text-[#7a8a9a] mb-0.5">Kroppsfett</p>
-                    <span className="text-2xl font-extralight tracking-tighter" style={{ color: getRiskColor(data.metricRisks.bodyFat) }}>
+                    <span className="text-2xl font-light tracking-tighter" style={{ color: getRiskColor(data.metricRisks.bodyFat) }}>
                       {data.bodyComposition.bodyFat}
                     </span>
                     <span className="text-[10px] ml-1 opacity-40 uppercase">%</span>
@@ -322,13 +352,10 @@ export const HTMLHealthReport = forwardRef<HTMLDivElement, HTMLHealthReportProps
                         {formatDelta('bodyFat', bodyFatDelta, 1)}
                       </span>
                     )}
-                    <span className="block text-[9px] uppercase font-bold tracking-tighter" style={{ color: getRiskColor(data.metricRisks.bodyFat) }}>
-                      ● {getRiskLabel(data.metricRisks.bodyFat)}
-                    </span>
                   </div>
                   <div>
                     <p className="text-[8px] uppercase text-[#7a8a9a] mb-0.5">Blodtryck</p>
-                    <span className="text-2xl font-extralight tracking-tighter" style={{ color: getRiskColor(data.metricRisks.bloodPressure) }}>
+                    <span className="text-2xl font-light tracking-tighter" style={{ color: getRiskColor(data.metricRisks.bloodPressure) }}>
                       {data.bloodPressure.systolic}/{data.bloodPressure.diastolic}
                     </span>
                     <span className="text-[10px] ml-1 opacity-40 uppercase">mmHg</span>
@@ -337,9 +364,6 @@ export const HTMLHealthReport = forwardRef<HTMLDivElement, HTMLHealthReportProps
                         {formatDelta('systolic', systolicDelta, 0)}
                       </span>
                     )}
-                    <span className="block text-[9px] uppercase font-bold tracking-tighter" style={{ color: getRiskColor(data.metricRisks.bloodPressure) }}>
-                      ● {getRiskLabel(data.metricRisks.bloodPressure)}
-                    </span>
                   </div>
                 </div>
 
@@ -347,7 +371,7 @@ export const HTMLHealthReport = forwardRef<HTMLDivElement, HTMLHealthReportProps
                 <div className="grid grid-cols-3 gap-3 pt-2.5">
                   <div>
                     <p className="text-[8px] uppercase text-[#7a8a9a] mb-0.5">Muskelmassa</p>
-                    <span className="text-2xl font-extralight tracking-tighter">{data.bodyComposition.muscleMass}</span>
+                    <span className="text-2xl font-light tracking-tighter">{data.bodyComposition.muscleMass}</span>
                     <span className="text-[10px] ml-1 opacity-40 uppercase">%</span>
                     {muscleMassDelta !== null && muscleMassDelta !== 0 && (
                       <span className="block text-[8px] font-bold" style={{ color: getDeltaColor('muscleMass', muscleMassDelta) }}>
@@ -357,7 +381,7 @@ export const HTMLHealthReport = forwardRef<HTMLDivElement, HTMLHealthReportProps
                   </div>
                   <div>
                     <p className="text-[8px] uppercase text-[#7a8a9a] mb-0.5">Visceralt fett</p>
-                    <span className="text-2xl font-extralight tracking-tighter" style={{ color: getRiskColor(data.metricRisks.visceralFat) }}>
+                    <span className="text-2xl font-light tracking-tighter" style={{ color: getRiskColor(data.metricRisks.visceralFat) }}>
                       {data.bodyComposition.visceralFat}
                     </span>
                     <span className="text-[10px] ml-1 opacity-40 uppercase">/20</span>
@@ -366,13 +390,10 @@ export const HTMLHealthReport = forwardRef<HTMLDivElement, HTMLHealthReportProps
                         {formatDelta('visceralFat', visceralFatDelta, 0)}
                       </span>
                     )}
-                    <span className="block text-[9px] uppercase font-bold tracking-tighter" style={{ color: getRiskColor(data.metricRisks.visceralFat) }}>
-                      ● {getRiskLabel(data.metricRisks.visceralFat)}
-                    </span>
                   </div>
                   <div>
                     <p className="text-[8px] uppercase text-[#7a8a9a] mb-0.5">Greppstyrka</p>
-                    <span className="text-2xl font-extralight tracking-tighter">{data.fitness.gripStrength}</span>
+                    <span className="text-2xl font-light tracking-tighter">{data.fitness.gripStrength}</span>
                     <span className="text-[10px] ml-1 opacity-40 uppercase">kg</span>
                     {gripDelta !== null && gripDelta !== 0 && (
                       <span className="block text-[8px] font-bold" style={{ color: getDeltaColor('gripStrength', gripDelta) }}>
@@ -385,7 +406,7 @@ export const HTMLHealthReport = forwardRef<HTMLDivElement, HTMLHealthReportProps
 
               {/* Kondition (VO2max / Ekblom-Bak) — egen ruta */}
               <div className="bento-card p-5">
-                <h2 className="serif text-lg italic mb-1">Kondition <span className="text-[8px] uppercase text-[#7a8a9a] not-italic tracking-wide">(Ekblom-Bak Test)</span></h2>
+                <h2 className="text-base font-extrabold mb-1 uppercase tracking-wide text-[#004B87]">Kondition <span className="text-[8px] font-normal text-[#7a8a9a] normal-case tracking-normal">(Ekblom-Bak Test)</span></h2>
                 <div className="flex items-baseline gap-2 mb-1">
                   <p className="text-lg font-light tracking-tight" style={{ color: getRiskColor(data.metricRisks.vo2Max) }}>
                     {data.fitness.vo2Max}
@@ -411,8 +432,8 @@ export const HTMLHealthReport = forwardRef<HTMLDivElement, HTMLHealthReportProps
               </div>
 
               {/* Blodanalys */}
-              <div className="bento-card p-5 bg-linear-to-br from-[#ffffff] to-[#F9F8F6]">
-                <h2 className="serif text-lg italic mb-2">Blodanalys</h2>
+              <div className="bento-card p-5">
+                <h2 className="text-base font-extrabold mb-2 uppercase tracking-wide text-[#004B87]">Blodanalys</h2>
                 <div className="space-y-1 text-xs font-light">
                   {[
                     { label: 'Hemoglobin', displayValue: `${data.bloodWork.hb.toFixed(0)}`, unit: 'g/L', risk: data.metricRisks.hb, rawValue: data.bloodWork.hb, prevRawValue: previousData?.bloodWork.hb ?? null, delta: hbDelta, deltaKey: 'hb' as const, decimals: 1, metricKey: 'hb' as const },
@@ -426,14 +447,17 @@ export const HTMLHealthReport = forwardRef<HTMLDivElement, HTMLHealthReportProps
                     const ref = getBloodRefRange(m.metricKey, data.gender, data.age);
                     const percent = getBloodBarPercent(m.rawValue, ref.low, ref.high);
                     const prevPercent = m.prevRawValue !== null ? getBloodBarPercent(m.prevRawValue, ref.low, ref.high) : null;
-                    const isRegression = prevPercent !== null && Math.abs(percent - 50) > Math.abs(prevPercent - 50);
-                    const dropLeft = isRegression ? Math.min(percent, prevPercent!) : 0;
-                    const dropWidth = isRegression ? Math.abs(percent - prevPercent!) : 0;
+                    const hasMoved = prevPercent !== null && Math.abs(percent - prevPercent) > 0.5;
+                    const dropLeft = hasMoved ? Math.min(percent, prevPercent!) : 0;
+                    const dropWidth = hasMoved ? Math.abs(percent - prevPercent!) : 0;
                     const isLast = idx === arr.length - 1;
                     return (
-                      <div key={m.label} className={isLast ? '' : 'border-b border-[#F5F2EE] pb-1'}>
+                      <div key={m.label} className={isLast ? '' : 'border-b border-[#D9EAF7] pb-1'}>
                         <div className="flex justify-between items-center mb-1">
-                          <span>{m.label}</span>
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            {m.label}
+                            <span style={{ color: getRiskColor(m.risk), fontSize: '13px', lineHeight: 1 }}>●</span>
+                          </span>
                           <div className="text-right flex items-center gap-2">
                             {m.delta !== null && m.delta !== 0 && (
                               <span className="text-[8px] font-bold" style={{ color: '#9A9488' }}>
@@ -441,24 +465,20 @@ export const HTMLHealthReport = forwardRef<HTMLDivElement, HTMLHealthReportProps
                               </span>
                             )}
                             <span className="font-normal mr-1.5">{m.displayValue}{m.unit ? ` ${m.unit}` : ''}</span>
-                            <span className="text-[9px] font-bold uppercase tracking-tighter" style={{ color: getRiskColor(m.risk) }}>
-                              {getRiskLabel(m.risk)}
-                            </span>
                           </div>
                         </div>
                         <div className="relative flex items-center h-3.5">
-                          <div className="slider-container w-full" style={{ height: '12px', background: BLOOD_BAR_GRADIENT }}>
-                            {isRegression && (
-                              <div
-                                className="slider-drop"
-                                style={{
-                                  left: `${dropLeft}%`,
-                                  width: `${dropWidth}%`,
-                                }}
-                              />
-                            )}
-                          </div>
-                          <div className="slider-knob" style={{ left: `${percent}%`, width: '18px', height: '18px', top: '-3px', marginLeft: '-9px' }} />
+                          <div className="slider-container w-full" style={{ height: '12px', background: BLOOD_BAR_GRADIENT }} />
+                          {hasMoved && (
+                            <div style={{
+                              position: 'absolute', top: '1px',
+                              left: `${dropLeft}%`,
+                              width: `${dropWidth}%`,
+                              height: '12px', borderRadius: '100px', pointerEvents: 'none',
+                              background: 'repeating-linear-gradient(-45deg, rgba(196,160,138,0.4) 0px, rgba(196,160,138,0.4) 2px, rgba(196,160,138,0) 2px, rgba(196,160,138,0) 6px)',
+                            }} />
+                          )}
+                          <div className="slider-knob" style={{ left: `${percent}%`, width: '16px', height: '16px', top: '-1px', marginLeft: '-8px' }} />
                         </div>
                       </div>
                     );
@@ -468,6 +488,20 @@ export const HTMLHealthReport = forwardRef<HTMLDivElement, HTMLHealthReportProps
             </div>
           </div>
 
+        </div>
+
+        {/* Footer: färgförklaring */}
+        <div style={{ paddingTop: '6px', borderTop: '1px solid #E0EEFA', display: 'flex', gap: '14px', justifyContent: 'flex-end', marginTop: '6px' }}>
+          {([
+            { label: 'Optimalt', color: '#004B87' },
+            { label: 'Bra', color: '#8FB3A3' },
+            { label: 'Varning', color: '#C4A47C' },
+            { label: 'Högrisk', color: '#C87979' },
+          ] as const).map(({ label, color }) => (
+            <span key={label} style={{ fontSize: '11px', color: '#9A9488', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <span style={{ color, fontSize: '13px' }}>●</span> {label}
+            </span>
+          ))}
         </div>
       </div>
     );

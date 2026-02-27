@@ -18,9 +18,8 @@ export function getDeltaColor(metricKey: string, delta: number): string {
   return isDeltaImprovement(metricKey, delta) ? '#8FB3A3' : '#C4A47C';
 }
 
-export function formatDelta(metricKey: string, delta: number, decimals: number = 1): string {
-  const improved = isDeltaImprovement(metricKey, delta);
-  const arrow = improved ? '▲' : '▼';
+export function formatDelta(_metricKey: string, delta: number, decimals: number = 1): string {
+  const arrow = delta > 0 ? '▲' : '▼';
   const sign = delta > 0 ? '+' : '';
   return `${arrow} ${sign}${delta.toFixed(decimals)}`;
 }

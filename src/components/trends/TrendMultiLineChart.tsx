@@ -90,10 +90,10 @@ export function TrendMultiLineChart({
   return (
     <div>
       <div className="mb-1" style={{ paddingLeft: `${pad.left}px` }}>
-        <span className={`${compact ? 'text-[7px]' : 'text-[10px]'} uppercase tracking-widest text-[#9A9488] font-semibold`}>
+        <span className={`${compact ? 'text-[7px]' : 'text-[10px]'} uppercase tracking-widest text-[#7a8a9a] font-semibold`}>
           {label}
         </span>
-        <span className={`${compact ? 'text-[5px]' : 'text-[8px]'} uppercase tracking-normal text-[#B5AFA2] ml-1`}>
+        <span className={`${compact ? 'text-[5px]' : 'text-[8px]'} uppercase tracking-normal text-[#9aafc7] ml-1`}>
           ({unit})
         </span>
       </div>

@@ -9,10 +9,10 @@ export default {
     extend: {
       colors: {
         'aktivitus-blue': '#004B87',
+        'aktivitus-navy': '#003A6E',
         'aktivitus-green': '#88B8B0',
         'aktivitus-beige': '#D9C5B2',
-        'aktivitus-cream': '#F8F6F2',
-        'aktivitus-border': '#E5E0D8',
+        'aktivitus-border': '#CDDFF2',
         'aktivitus-text': '#4A4642',
         'aktivitus-teal': '#8FB3A3',
         'aktivitus-sage': '#C8D6C7',

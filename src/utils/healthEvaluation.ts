@@ -299,7 +299,7 @@ export function evaluateHealthData(data: HealthData): EvaluatedHealthData {
 
 export function getRiskColor(risk: RiskLevel): string {
   switch (risk) {
-    case 'optimal': return '#5B9289';
+    case 'optimal': return '#004B87';
     case 'good': return '#8FB3A3';
     case 'warning': return '#C4A47C';
     case 'high-risk': return '#C87979';

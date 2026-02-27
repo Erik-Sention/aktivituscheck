@@ -150,7 +150,7 @@ export function TrendView({ entries, onClose }: TrendViewProps) {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8F6F2]">
+    <div className="min-h-screen bg-white">
       {/* Sticky header (not in PDF) */}
       <div className="sticky top-0 z-20 bg-white/80 backdrop-blur-sm border-b border-[#E5E0D8]">
         <div className="max-w-[1200px] mx-auto px-8 py-4 flex justify-between items-center">
@@ -217,17 +217,17 @@ export function TrendView({ entries, onClose }: TrendViewProps) {
     return (
       <div
         ref={ref}
-        style={{ width: '794px', padding: '20px 32px 16px' }}
-        className="bg-[#F8F6F2]"
+        style={{ width: '794px', padding: '20px 32px 16px', borderTop: '4px solid #004B87' }}
+        className="bg-white"
       >
         {/* Header — same structure as original health report */}
         <header className="flex justify-between items-start mb-3">
           <div>
-            <p className="serif text-xl italic text-[#4A4642]">{name}</p>
+            <p className="font-bold text-base text-[#1C2B3A]">{name}</p>
             {latest.personnummer && (
-              <p className="text-[10px] uppercase tracking-[0.2em] text-[#B5AFA2] mt-1">{latest.personnummer}</p>
+              <p className="text-[10px] uppercase tracking-[0.15em] text-[#7a8a9a] mt-1">{latest.personnummer}</p>
             )}
-            <p className="text-[10px] uppercase tracking-[0.2em] text-[#B5AFA2] mt-1">
+            <p className="text-[10px] uppercase tracking-[0.15em] text-[#7a8a9a] mt-1">
               {firstDate} – {lastDate} &bull; {sorted.length} mätningar
             </p>
           </div>

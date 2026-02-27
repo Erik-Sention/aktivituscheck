@@ -22,6 +22,8 @@
   --color-red-200: #fecaca;
   --color-aktivitus-teal: #8FB3A3;
   --color-aktivitus-sage: #C8D6C7;
+  --color-aktivitus-blue: #004B87;
+  --color-aktivitus-navy: #003A6E;
 }
 
 /* Font setup */
@@ -32,7 +34,7 @@
 
 /* Custom styles for report */
 body {
-  background-color: #F8F6F2;
+  background-color: #FFFFFF;
   font-family: var(--font-inter), 'Inter', sans-serif;
   color: #4A4642;
 }
@@ -43,7 +45,7 @@ body {
 
 .slider-container {
   height: 18px;
-  background: #E5E0D8;
+  background: #DDE8F5;
   border-radius: 100px;
   position: relative;
   overflow: hidden;
@@ -62,10 +64,10 @@ body {
   height: 100%;
   background: repeating-linear-gradient(
     -45deg,
-    rgba(196, 160, 138, 0.18),
-    rgba(196, 160, 138, 0.18) 2px,
-    transparent 2px,
-    transparent 5px
+    rgba(196, 160, 138, 0.35) 0px,
+    rgba(196, 160, 138, 0.35) 2px,
+    rgba(196, 160, 138, 0) 2px,
+    rgba(196, 160, 138, 0) 6px
   );
   border-radius: 100px;
   pointer-events: none;
@@ -99,8 +101,8 @@ body {
 .bento-card {
   background: #FFFFFF;
   border-radius: 32px;
-  border: 2px solid #EFEDE8;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
+  border: 2px solid #CDDFF2;
+  box-shadow: none;
 }
 
 .aktivitus-blue {
@@ -108,25 +110,24 @@ body {
 }
 
 .status-good {
-  color: #5B9289;
+  color: #004B87;        /* Aktivitus blue (8-10) */
 }
 
 .status-mid {
-  color: #C4A47C;
+  color: #8FB3A3;        /* Aktivitus teal (4-7) */
 }
 
 .status-alert {
-  color: #C87979;
+  color: #C4A47C;        /* Orange/amber (1-3) */
 }
 
 .focus-card {
-  background: #FFFFFF;
-  border-radius: 16px;
-  border: 1.5px solid #EFEDE8;
-  padding: 12px 16px;
+  background: #EEF4FB;
+  border-radius: 6px;
+  border-left: 3px solid #004B87;
+  padding: 5px 10px;
   display: flex;
   align-items: flex-start;
-  gap: 10px;
 }
 
 /* Smooth transitions for interactive elements */
